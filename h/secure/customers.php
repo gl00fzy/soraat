@@ -79,7 +79,7 @@ include_once("check_login.php");
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php">หน้าหลัก</a>
+                        <a class="nav-link" href="index2.php">หน้าหลัก</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="products.php">จัดการสินค้า</a>
