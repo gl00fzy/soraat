@@ -13,10 +13,8 @@ session_start();
 
 <h1> สรอัฐ น้ำใส(กอฟ) </h1>
 <?php
-$_SESSION['name']="สรอัฐ น้ำใส";
-$_SESSION['nickname']="กอฟฟารี่";
-$_SESSION['p1']="โซฟา";
-$_SESSION['p2']="ห่วงยาง";
+unset $_SESSION['name']."<br>";
+unset $_SESSION['nickname']."<br>";
 ?>
 
 </body>
