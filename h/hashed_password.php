@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // กำหนดรหัสผ่านที่ต้องการ
-$password_plaintext = '4321'; 
+$password_plaintext = '1234'; 
 
 // สร้าง Hash
 $hash = password_hash($password_plaintext, PASSWORD_DEFAULT);
