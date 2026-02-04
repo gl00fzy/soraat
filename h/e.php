@@ -13,8 +13,8 @@ session_start();
 
 <h1> สรอัฐ น้ำใส(กอฟ) </h1>
 <?php
-unset $_SESSION['name']."<br>";
-unset $_SESSION['nickname']."<br>";
+unset ($_SESSION['name'])."<br>";
+unset ($_SESSION['nickname'])."<br>";
 ?>
 
 </body>
