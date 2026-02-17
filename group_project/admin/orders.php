@@ -97,13 +97,8 @@ if (isset($_POST['update_status'])) {
                             $stmt = $pdo->query($sql);
                             
                             while ($row = $stmt->fetch()) {
-                                $badge_class = match($row['status']) {
-                                    'pending' => 'admin-badge-pending',
-                                    'paid' => 'admin-badge-paid',
-                                    'shipped' => 'admin-badge-shipped',
-                                    'cancelled' => 'admin-badge-cancelled',
-                                    default => 'admin-badge-pending'
-                                };
+                                $badge_map = ['pending'=>'admin-badge-pending','paid'=>'admin-badge-paid','shipped'=>'admin-badge-shipped','cancelled'=>'admin-badge-cancelled'];
+                                $badge_class = isset($badge_map[$row['status']]) ? $badge_map[$row['status']] : 'admin-badge-pending';
                             ?>
                             <tr>
                                 <td class="fw-medium">#<?php echo $row['id']; ?></td>

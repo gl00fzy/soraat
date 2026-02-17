@@ -106,13 +106,8 @@ $stmt = $pdo->query("SELECT o.*, u.fullname FROM orders o JOIN users u ON o.user
                             </thead>
                             <tbody>
                                 <?php while ($row = $stmt->fetch()) { 
-                                    $badge = match($row['status']) {
-                                        'pending' => 'admin-badge-pending',
-                                        'paid' => 'admin-badge-paid',
-                                        'shipped' => 'admin-badge-shipped',
-                                        'cancelled' => 'admin-badge-cancelled',
-                                        default => 'admin-badge-pending'
-                                    };
+                                    $badge_map = ['pending'=>'admin-badge-pending','paid'=>'admin-badge-paid','shipped'=>'admin-badge-shipped','cancelled'=>'admin-badge-cancelled'];
+                                    $badge = isset($badge_map[$row['status']]) ? $badge_map[$row['status']] : 'admin-badge-pending';
                                 ?>
                                 <tr>
                                     <td class="fw-medium">#<?php echo $row['id']; ?></td>
