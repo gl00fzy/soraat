@@ -3,25 +3,30 @@ require_once '../db.php';
 
 // ตรวจสอบสิทธิ์ Admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
-$order_id = $_GET['id'];
 
-// ดึงข้อมูลออเดอร์ + ข้อมูลลูกค้า (ที่อยู่)
-$stmt = $pdo->prepare("SELECT o.*, u.fullname, u.address, u.email, u.username 
-                       FROM orders o 
-                       JOIN users u ON o.user_id = u.id 
-                       WHERE o.id = ?");
-$stmt->execute([$order_id]);
+if (!isset($_GET['id'])) { header("Location: orders.php"); exit(); }
+
+// ดึงข้อมูลออเดอร์ พร้อมข้อมูลลูกค้า
+$stmt = $pdo->prepare("SELECT o.*, u.fullname, u.address as user_address, u.email, u.username 
+                        FROM orders o JOIN users u ON o.user_id = u.id 
+                        WHERE o.id = ?");
+$stmt->execute([$_GET['id']]);
 $order = $stmt->fetch();
 
-// ดึงรายการสินค้า
-$stmt_items = $pdo->prepare("SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?");
-$stmt_items->execute([$order_id]);
+if (!$order) { die("ไม่พบออเดอร์"); }
 
-$status = $order['status'];
-$badge_class = 'admin-badge-pending';
-if($status == 'paid') $badge_class = 'admin-badge-paid';
-if($status == 'shipped') $badge_class = 'admin-badge-shipped';
-if($status == 'cancelled') $badge_class = 'admin-badge-cancelled';
+// ดึงรายการสินค้าในออเดอร์
+$stmt_items = $pdo->prepare("SELECT oi.*, p.name, p.image FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?");
+$stmt_items->execute([$order['id']]);
+
+// กำหนดสี status badge
+$status_colors = [
+    'pending' => 'admin-badge-pending',
+    'paid' => 'admin-badge-paid', 
+    'shipped' => 'admin-badge-shipped',
+    'cancelled' => 'admin-badge-cancelled'
+];
+$status_class = $status_colors[$order['status']] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -29,7 +34,7 @@ if($status == 'cancelled') $badge_class = 'admin-badge-cancelled';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายละเอียดออเดอร์ #<?php echo $order_id; ?> — MY SHOP Admin</title>
+    <title>รายละเอียดออเดอร์ #<?php echo $order['id']; ?> — MY SHOP Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="admin_style.css">
@@ -54,68 +59,137 @@ if($status == 'cancelled') $badge_class = 'admin-badge-cancelled';
 
         <!-- Main Content -->
         <div class="col-md-10 admin-main">
-            <div class="admin-card admin-animate">
-                <!-- Header -->
-                <div class="card-header">
-                    <h5><i class="bi bi-receipt me-2" style="color:var(--admin-primary);"></i>คำสั่งซื้อ #<?php echo $order_id; ?></h5>
-                    <a href="orders.php" class="btn btn-sm btn-admin-secondary"><i class="bi bi-arrow-left me-1"></i>ย้อนกลับ</a>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h6 style="color:var(--admin-primary); font-weight:600; margin-bottom:12px;">
-                                <i class="bi bi-person me-1"></i>ข้อมูลลูกค้า & ที่อยู่จัดส่ง
-                            </h6>
-                            <p style="margin-bottom:6px;"><strong>ชื่อ:</strong> <?php echo $order['fullname']; ?> (<?php echo $order['username']; ?>)</p>
-                            <p style="margin-bottom:12px;"><strong>อีเมล:</strong> <?php echo $order['email']; ?></p>
-                            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--admin-card-border); border-radius:10px; padding:14px;">
-                                <strong style="color:var(--admin-text-secondary);"><i class="bi bi-geo-alt me-1"></i>ที่อยู่จัดส่ง:</strong><br>
-                                <?php echo nl2br($order['address']); ?>
-                            </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="admin-page-title mb-0"><i class="bi bi-receipt"></i>ออเดอร์ #<?php echo $order['id']; ?></h2>
+                <a href="orders.php" class="btn btn-admin-secondary"><i class="bi bi-arrow-left me-1"></i>กลับหน้าจัดการออเดอร์</a>
+            </div>
+
+            <div class="row g-4">
+                <!-- ข้อมูลลูกค้า -->
+                <div class="col-md-6 admin-animate">
+                    <div class="admin-card h-100">
+                        <div class="card-header">
+                            <h5><i class="bi bi-person me-2" style="color:var(--admin-primary);"></i>ข้อมูลลูกค้า</h5>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <h6 style="color:var(--admin-primary); font-weight:600; margin-bottom:12px;">
-                                <i class="bi bi-info-circle me-1"></i>สถานะคำสั่งซื้อ
-                            </h6>
-                            <div class="mb-2">
-                                <span class="admin-badge <?php echo $badge_class; ?>" style="font-size:1rem; padding:8px 20px;">
-                                    <?php echo ucfirst($status); ?>
-                                </span>
-                            </div>
-                            <p style="color:var(--admin-text-muted);"><i class="bi bi-calendar3 me-1"></i>วันที่สั่ง: <?php echo $order['order_date']; ?></p>
+                        <div class="card-body">
+                            <table class="table admin-table table-borderless mb-0">
+                                <tr><td style="width:35%;color:var(--admin-text-muted);">ชื่อผู้ใช้</td><td><?php echo htmlspecialchars($order['username']); ?></td></tr>
+                                <tr><td style="color:var(--admin-text-muted);">ชื่อ-นามสกุล</td><td class="fw-medium"><?php echo htmlspecialchars($order['fullname']); ?></td></tr>
+                                <tr><td style="color:var(--admin-text-muted);">อีเมล</td><td><?php echo htmlspecialchars($order['email']); ?></td></tr>
+                            </table>
                         </div>
                     </div>
+                </div>
 
-                    <h6 class="mt-4 mb-3" style="font-weight:600; color:var(--admin-text);">
-                        <i class="bi bi-list-ul me-1" style="color:var(--admin-primary);"></i>รายการสินค้า
-                    </h6>
-                    <div class="table-responsive">
-                        <table class="table admin-table">
-                            <thead>
-                                <tr>
-                                    <th>สินค้า</th>
-                                    <th class="text-end">ราคา</th>
-                                    <th class="text-center">จำนวน</th>
-                                    <th class="text-end">รวม</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($item = $stmt_items->fetch()) { ?>
-                                <tr>
-                                    <td><?php echo $item['name']; ?></td>
-                                    <td class="text-end"><?php echo number_format($item['price'], 2); ?> ฿</td>
-                                    <td class="text-center"><?php echo $item['quantity']; ?></td>
-                                    <td class="text-end fw-bold" style="color:var(--admin-success);"><?php echo number_format($item['price'] * $item['quantity'], 2); ?> ฿</td>
-                                </tr>
-                                <?php } ?>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" class="text-end fw-bold">ยอดรวมสุทธิ</td>
-                                    <td class="text-end fw-bold" style="color:var(--admin-success); font-size:1.2rem;"><?php echo number_format($order['total_price'], 2); ?> ฿</td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                <!-- ข้อมูลออเดอร์ -->
+                <div class="col-md-6 admin-animate admin-animate-delay-1">
+                    <div class="admin-card h-100">
+                        <div class="card-header">
+                            <h5><i class="bi bi-info-circle me-2" style="color:var(--admin-accent);"></i>ข้อมูลออเดอร์</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table admin-table table-borderless mb-0">
+                                <tr><td style="width:35%;color:var(--admin-text-muted);">วันที่สั่งซื้อ</td><td><?php echo $order['order_date']; ?></td></tr>
+                                <tr><td style="color:var(--admin-text-muted);">ยอดรวม</td><td class="fw-bold" style="color:var(--admin-success); font-size:1.1rem;"><?php echo number_format($order['total_price'], 2); ?> ฿</td></tr>
+                                <tr><td style="color:var(--admin-text-muted);">สถานะ</td><td><span class="admin-badge <?php echo $status_class; ?>"><?php echo ucfirst($order['status']); ?></span></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ที่อยู่จัดส่ง -->
+                <div class="col-md-6 admin-animate admin-animate-delay-2">
+                    <div class="admin-card h-100">
+                        <div class="card-header">
+                            <h5><i class="bi bi-truck me-2" style="color:var(--admin-warning);"></i>ที่อยู่จัดส่ง</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php 
+                            // แสดง shipping_address ของออเดอร์ (ถ้ามี) หรือ address ของ user
+                            $shipping = !empty($order['shipping_address']) ? $order['shipping_address'] : ($order['user_address'] ?? '—');
+                            ?>
+                            <p style="line-height:1.8; color:var(--admin-text-secondary);">
+                                <i class="bi bi-geo-alt me-1" style="color:var(--admin-primary);"></i>
+                                <?php echo nl2br(htmlspecialchars($shipping)); ?>
+                            </p>
+                            <?php if(!empty($order['shipping_address']) && $order['shipping_address'] != ($order['user_address'] ?? '')): ?>
+                            <small style="color:var(--admin-text-muted);">
+                                <i class="bi bi-info-circle me-1"></i>ที่อยู่จัดส่งเฉพาะออเดอร์นี้ (ไม่ใช่ที่อยู่หลักของลูกค้า)
+                            </small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- สลิปการชำระเงิน -->
+                <div class="col-md-6 admin-animate admin-animate-delay-2">
+                    <div class="admin-card h-100">
+                        <div class="card-header">
+                            <h5><i class="bi bi-credit-card me-2" style="color:var(--admin-success);"></i>หลักฐานการชำระเงิน</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php if(!empty($order['payment_slip'])): ?>
+                                <div class="text-center">
+                                    <img src="../<?php echo htmlspecialchars($order['payment_slip']); ?>" 
+                                         style="max-width:260px; max-height:350px; border-radius:12px; border:1px solid var(--admin-card-border);" alt="สลิปโอนเงิน">
+                                    <?php if(!empty($order['payment_date'])): ?>
+                                    <p class="mt-2" style="color:var(--admin-text-muted);">
+                                        <i class="bi bi-clock me-1"></i>ชำระเมื่อ: <?php echo $order['payment_date']; ?>
+                                    </p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="text-center py-3">
+                                    <i class="bi bi-receipt" style="font-size:2rem; color:var(--admin-text-muted);"></i>
+                                    <p style="color:var(--admin-text-muted); margin-top:8px;">ยังไม่มีหลักฐานการชำระเงิน</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- รายการสินค้าในออเดอร์ -->
+                <div class="col-12 admin-animate admin-animate-delay-3">
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h5><i class="bi bi-bag me-2" style="color:var(--admin-primary);"></i>รายการสินค้า</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>รูป</th>
+                                        <th>ชื่อสินค้า</th>
+                                        <th>ราคาต่อชิ้น</th>
+                                        <th>จำนวน</th>
+                                        <th>รวม</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php while($item = $stmt_items->fetch()): ?>
+                                    <tr>
+                                        <td>
+                                            <?php if($item['image']): ?>
+                                            <img src="../<?php echo $item['image']; ?>" width="44" style="border-radius:8px; border:1px solid var(--admin-card-border);">
+                                            <?php else: ?>
+                                            <span style="color:var(--admin-text-muted);">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="fw-medium"><?php echo htmlspecialchars($item['name'] ?? 'สินค้าถูกลบ'); ?></td>
+                                        <td><?php echo number_format($item['price'], 2); ?> ฿</td>
+                                        <td><?php echo $item['quantity']; ?></td>
+                                        <td class="fw-bold" style="color:var(--admin-success);"><?php echo number_format($item['price'] * $item['quantity'], 2); ?> ฿</td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-end fw-bold" style="font-size:1.05rem;">ยอดรวมทั้งหมด:</td>
+                                        <td class="fw-bold" style="color:var(--admin-success); font-size:1.15rem;"><?php echo number_format($order['total_price'], 2); ?> ฿</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

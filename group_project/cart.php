@@ -149,8 +149,8 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="bi bi-arrow-clockwise me-1"></i>คำนวณราคาใหม่
                     </button>
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="checkout_save.php" class="btn btn-gradient px-4">
-                            <i class="bi bi-check2-circle me-1"></i>ยืนยันการสั่งซื้อ
+                        <a href="checkout.php" class="btn btn-gradient px-4">
+                            <i class="bi bi-credit-card me-1"></i>ดำเนินการชำระเงิน
                         </a>
                     <?php else: ?>
                         <a href="login.php" class="btn btn-gradient px-4">
