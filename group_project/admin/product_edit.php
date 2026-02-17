@@ -33,10 +33,8 @@ if (isset($_POST['update'])) {
     $stock = $_POST['stock'];
     $category_id = $_POST['category_id'];
     
-    // เริ่มต้นใช้รูปเดิม
     $image_path = $product['image'];
 
-    // เช็คว่ามีการอัปโหลดรูปใหม่หรือไม่
     if (isset($_FILES['image']['name']) && $_FILES['image']['name'] != "") {
         $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
         $new_name = "product_" . uniqid() . "." . $ext;
@@ -44,16 +42,13 @@ if (isset($_POST['update'])) {
         $upload_path = $target_dir . $new_name;
 
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
-            // ลบรูปเก่าทิ้ง (ถ้ามี และไฟล์นั้นมีอยู่จริง)
             if (!empty($product['image']) && file_exists("../" . $product['image'])) {
                 unlink("../" . $product['image']);
             }
-            // อัปเดต Path รูปใหม่
             $image_path = "uploads/" . $new_name;
         }
     }
 
-    // อัปเดตข้อมูลลงฐานข้อมูล
     $sql = "UPDATE products SET name=?, description=?, price=?, stock=?, category_id=?, image=? WHERE id=?";
     $stmt = $pdo->prepare($sql);
     
@@ -69,78 +64,125 @@ if (isset($_POST['update'])) {
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>แก้ไขสินค้า: <?php echo $product['name']; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขสินค้า: <?php echo $product['name']; ?> — MY SHOP Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="admin_style.css">
 </head>
-<body class="bg-light">
+<body class="admin-body">
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">แก้ไขสินค้า</h4>
-                    <a href="products.php" class="btn btn-sm btn-light">ย้อนกลับ</a>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        
-                        <div class="mb-3">
-                            <label class="form-label">ชื่อสินค้า</label>
-                            <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($product['name']); ?>" required>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 admin-sidebar">
+            <a class="sidebar-brand" href="dashboard.php">✦ MY SHOP</a>
+            <span class="sidebar-subtitle">Admin Panel</span>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
+                <li class="nav-item"><a href="products.php" class="nav-link active"><i class="bi bi-box-seam"></i>จัดการสินค้า</a></li>
+                <li class="nav-item"><a href="categories.php" class="nav-link"><i class="bi bi-tags"></i>จัดการหมวดหมู่</a></li>
+                <li class="nav-item"><a href="orders.php" class="nav-link"><i class="bi bi-receipt"></i>จัดการออเดอร์</a></li>
+                <li class="nav-item"><a href="users.php" class="nav-link"><i class="bi bi-people"></i>จัดการลูกค้า</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link logout-link"><i class="bi bi-box-arrow-left"></i>ออกจากระบบ</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10 admin-main">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="admin-card admin-animate">
+                        <div class="card-header">
+                            <h5><i class="bi bi-pencil me-2" style="color:var(--admin-warning);"></i>แก้ไขสินค้า</h5>
+                            <a href="products.php" class="btn btn-sm btn-admin-secondary"><i class="bi bi-arrow-left me-1"></i>ย้อนกลับ</a>
                         </div>
+                        <div class="card-body admin-form">
+                            <form method="post" enctype="multipart/form-data">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">ชื่อสินค้า</label>
+                                    <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($product['name']); ?>" required>
+                                </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">หมวดหมู่</label>
-                                <select name="category_id" class="form-select" required>
-                                    <option value="">-- เลือกหมวดหมู่ --</option>
-                                    <?php foreach($categories as $cat): ?>
-                                        <option value="<?php echo $cat['id']; ?>" <?php echo ($cat['id'] == $product['category_id']) ? 'selected' : ''; ?>>
-                                            <?php echo $cat['name']; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">ราคา</label>
-                                <input type="number" name="price" step="0.01" class="form-control" value="<?php echo $product['price']; ?>" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">รายละเอียดสินค้า</label>
-                            <textarea name="description" class="form-control" rows="4"><?php echo htmlspecialchars($product['description']); ?></textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">จำนวนสต็อก</label>
-                                <input type="number" name="stock" class="form-control" value="<?php echo $product['stock']; ?>" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">รูปภาพสินค้า</label>
-                                <?php if($product['image']): ?>
-                                    <div class="mb-2">
-                                        <img src="../<?php echo $product['image']; ?>" width="100" class="img-thumbnail">
-                                        <small class="text-muted d-block">รูปปัจจุบัน</small>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">หมวดหมู่</label>
+                                        <select name="category_id" class="form-select" required>
+                                            <option value="">-- เลือกหมวดหมู่ --</option>
+                                            <?php foreach($categories as $cat): ?>
+                                                <option value="<?php echo $cat['id']; ?>" <?php echo ($cat['id'] == $product['category_id']) ? 'selected' : ''; ?>>
+                                                    <?php echo $cat['name']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
-                                <?php endif; ?>
-                                <input type="file" name="image" class="form-control" accept="image/*">
-                                <div class="form-text">อัปโหลดใหม่เพื่อเปลี่ยนรูปเดิม (ถ้าไม่เปลี่ยนให้เว้นว่างไว้)</div>
-                            </div>
-                        </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">ราคา</label>
+                                        <input type="number" name="price" step="0.01" class="form-control" value="<?php echo $product['price']; ?>" required>
+                                    </div>
+                                </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" name="update" class="btn btn-warning btn-lg">บันทึกการแก้ไข</button>
-                        </div>
+                                <div class="mb-3">
+                                    <label class="form-label">รายละเอียดสินค้า</label>
+                                    <textarea name="description" class="form-control" rows="4"><?php echo htmlspecialchars($product['description']); ?></textarea>
+                                </div>
 
-                    </form>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">จำนวนสต็อก</label>
+                                        <input type="number" name="stock" class="form-control" value="<?php echo $product['stock']; ?>" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">รูปภาพสินค้า</label>
+                                        <div class="img-preview-area" onclick="document.getElementById('imageInput').click()">
+                                            <?php if($product['image']): ?>
+                                                <img id="imagePreview" src="../<?php echo $product['image']; ?>">
+                                                <div class="preview-placeholder" id="previewPlaceholder" style="display:none;">
+                                                    <i class="bi bi-cloud-upload"></i>
+                                                    <span>คลิกเพื่อเลือกรูปภาพ</span>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="preview-placeholder" id="previewPlaceholder">
+                                                    <i class="bi bi-cloud-upload"></i>
+                                                    <span>คลิกเพื่อเลือกรูปภาพ</span>
+                                                </div>
+                                                <img id="imagePreview" src="" style="display:none;">
+                                            <?php endif; ?>
+                                        </div>
+                                        <input type="file" name="image" id="imageInput" class="d-none" accept="image/*" onchange="previewImage(this)">
+                                        <div class="form-text">อัปโหลดใหม่เพื่อเปลี่ยนรูปเดิม (ถ้าไม่เปลี่ยนให้เว้นว่างไว้)</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid mt-3">
+                                    <button type="submit" name="update" class="btn btn-admin-primary btn-lg">
+                                        <i class="bi bi-check-lg me-1"></i>บันทึกการแก้ไข
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('previewPlaceholder').style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 </body>
 </html>

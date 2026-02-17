@@ -18,31 +18,67 @@ if (isset($_POST['update_status'])) {
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - จัดการออเดอร์</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - จัดการออเดอร์ — MY SHOP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin_style.css">
+    <style>
+        /* DataTable dark theme overrides */
+        .dataTables_wrapper .dataTables_filter input,
+        .dataTables_wrapper .dataTables_length select {
+            background: rgba(255,255,255,0.06) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: var(--admin-text) !important;
+            border-radius: 8px !important;
+            padding: 6px 12px !important;
+        }
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label {
+            color: var(--admin-text-muted) !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: var(--admin-text-secondary) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            background: transparent !important;
+            border-radius: 6px !important;
+            margin: 0 2px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: rgba(102,126,234,0.2) !important;
+            color: #fff !important;
+            border-color: var(--admin-primary) !important;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body class="admin-body">
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-2 bg-dark text-white min-vh-100 p-3">
-            <h4>Admin Panel</h4>
-            <hr>
+        <!-- Sidebar -->
+        <div class="col-md-2 admin-sidebar">
+            <a class="sidebar-brand" href="dashboard.php">✦ MY SHOP</a>
+            <span class="sidebar-subtitle">Admin Panel</span>
             <ul class="nav flex-column">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link text-white">Dashboard</a></li>
-                <li class="nav-item"><a href="products.php" class="nav-link text-white">จัดการสินค้า</a></li>
-                <li class="nav-item"><a href="orders.php" class="nav-link text-white active">จัดการออเดอร์</a></li>
-                <li class="nav-item"><a href="users.php" class="nav-link text-white">จัดการลูกค้า</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link text-danger mt-5">ออกจากระบบ</a></li>
+                <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
+                <li class="nav-item"><a href="products.php" class="nav-link"><i class="bi bi-box-seam"></i>จัดการสินค้า</a></li>
+                <li class="nav-item"><a href="categories.php" class="nav-link"><i class="bi bi-tags"></i>จัดการหมวดหมู่</a></li>
+                <li class="nav-item"><a href="orders.php" class="nav-link active"><i class="bi bi-receipt"></i>จัดการออเดอร์</a></li>
+                <li class="nav-item"><a href="users.php" class="nav-link"><i class="bi bi-people"></i>จัดการลูกค้า</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link logout-link"><i class="bi bi-box-arrow-left"></i>ออกจากระบบ</a></li>
             </ul>
         </div>
 
-        <div class="col-md-10 p-4">
-            <h2 class="mb-4">รายการคำสั่งซื้อ</h2>
-            <div class="card shadow-sm">
+        <!-- Main Content -->
+        <div class="col-md-10 admin-main">
+            <h2 class="admin-page-title"><i class="bi bi-receipt"></i>รายการคำสั่งซื้อ</h2>
+            
+            <div class="admin-card admin-animate">
                 <div class="card-body">
-                    <table id="orderTable" class="table table-hover" style="width:100%">
+                    <table id="orderTable" class="table admin-table" style="width:100%">
                         <thead>
                             <tr>
                                 <th>Order ID</th>
@@ -55,45 +91,44 @@ if (isset($_POST['update_status'])) {
                         </thead>
                         <tbody>
                             <?php
-                            // Join ตารางเพื่อดึงชื่อลูกค้ามาแสดง
                             $sql = "SELECT o.*, u.fullname FROM orders o 
                                     JOIN users u ON o.user_id = u.id 
                                     ORDER BY o.order_date DESC";
                             $stmt = $pdo->query($sql);
                             
                             while ($row = $stmt->fetch()) {
-                                // กำหนดสี Badge ตามสถานะ
-                                $badge_color = match($row['status']) {
-                                    'pending' => 'secondary',
-                                    'paid' => 'info',
-                                    'shipped' => 'success',
-                                    'cancelled' => 'danger',
-                                    default => 'secondary'
+                                $badge_class = match($row['status']) {
+                                    'pending' => 'admin-badge-pending',
+                                    'paid' => 'admin-badge-paid',
+                                    'shipped' => 'admin-badge-shipped',
+                                    'cancelled' => 'admin-badge-cancelled',
+                                    default => 'admin-badge-pending'
                                 };
                             ?>
                             <tr>
-                                <td>#<?php echo $row['id']; ?></td>
+                                <td class="fw-medium">#<?php echo $row['id']; ?></td>
                                 <td><?php echo htmlspecialchars($row['fullname']); ?></td>
-                                <td><?php echo number_format($row['total_price'], 2); ?></td>
+                                <td class="fw-bold" style="color:var(--admin-success);"><?php echo number_format($row['total_price'], 2); ?> ฿</td>
                                 <td><?php echo date('d/m/Y H:i', strtotime($row['order_date'])); ?></td>
-                                <td><span class="badge bg-<?php echo $badge_color; ?>"><?php echo ucfirst($row['status']); ?></span></td>
+                                <td><span class="admin-badge <?php echo $badge_class; ?>"><?php echo ucfirst($row['status']); ?></span></td>
                                 <td>
-                                    <a href="order_details.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm">ดูรายละเอียด</a>
+                                    <a href="order_details.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-admin-info"><i class="bi bi-eye"></i></a>
                                     
-                                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal<?php echo $row['id']; ?>">
-                                        เปลี่ยนสถานะ
+                                    <button type="button" class="btn btn-sm btn-admin-warning" data-bs-toggle="modal" data-bs-target="#statusModal<?php echo $row['id']; ?>">
+                                        <i class="bi bi-arrow-repeat"></i>
                                     </button>
 
                                     <div class="modal fade" id="statusModal<?php echo $row['id']; ?>" tabindex="-1">
                                         <div class="modal-dialog">
-                                            <form method="post" class="modal-content">
+                                            <form method="post" class="modal-content admin-modal">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">อัปเดตสถานะ Order #<?php echo $row['id']; ?></h5>
+                                                    <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2"></i>อัปเดตสถานะ Order #<?php echo $row['id']; ?></h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <input type="hidden" name="order_id" value="<?php echo $row['id']; ?>">
-                                                    <select name="status" class="form-select">
+                                                    <label class="form-label" style="color:var(--admin-text-secondary);">เลือกสถานะใหม่</label>
+                                                    <select name="status" class="form-select" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--admin-text);border-radius:8px;">
                                                         <option value="pending" <?php if($row['status']=='pending') echo 'selected'; ?>>Pending (รอชำระ)</option>
                                                         <option value="paid" <?php if($row['status']=='paid') echo 'selected'; ?>>Paid (ชำระแล้ว)</option>
                                                         <option value="shipped" <?php if($row['status']=='shipped') echo 'selected'; ?>>Shipped (จัดส่งแล้ว)</option>
@@ -101,7 +136,9 @@ if (isset($_POST['update_status'])) {
                                                     </select>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="submit" name="update_status" class="btn btn-primary">บันทึก</button>
+                                                    <button type="submit" name="update_status" class="btn btn-admin-primary">
+                                                        <i class="bi bi-check-lg me-1"></i>บันทึก
+                                                    </button>
                                                 </div>
                                             </form>
                                         </div>

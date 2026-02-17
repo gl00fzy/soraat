@@ -9,19 +9,17 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Locatio
 // 1. จัดการการบันทึกข้อมูล (เพิ่ม หรือ แก้ไข)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = trim($_POST['name']);
-    $id = $_POST['id']; // รับค่า ID (ถ้ามีคือแก้ไข ถ้าไม่มีคือเพิ่มใหม่)
+    $id = $_POST['id'];
 
     if (!empty($name)) {
         if ($id) {
-            // กรณีแก้ไข (Update)
             $stmt = $pdo->prepare("UPDATE categories SET name = ? WHERE id = ?");
             $stmt->execute([$name, $id]);
         } else {
-            // กรณีเพิ่มใหม่ (Insert)
             $stmt = $pdo->prepare("INSERT INTO categories (name) VALUES (?)");
             $stmt->execute([$name]);
         }
-        header("Location: categories.php"); // รีโหลดหน้าเพื่อเคลียร์ค่า
+        header("Location: categories.php");
         exit();
     }
 }
@@ -30,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     
-    // เช็คก่อนว่ามีสินค้าในหมวดหมู่นี้ไหม (ถ้ามีห้ามลบ เดี๋ยวสินค้าไม่มีที่อยู่)
     $check = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id = ?");
     $check->execute([$id]);
     
@@ -57,84 +54,99 @@ if (isset($_GET['edit'])) {
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - จัดการประเภทสินค้า</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - จัดการประเภทสินค้า — MY SHOP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="admin_style.css">
 </head>
-<body class="bg-light">
+<body class="admin-body">
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-2 bg-dark text-white min-vh-100 p-3">
-            <h4>Admin Panel</h4>
-            <hr>
+        <!-- Sidebar -->
+        <div class="col-md-2 admin-sidebar">
+            <a class="sidebar-brand" href="dashboard.php">✦ MY SHOP</a>
+            <span class="sidebar-subtitle">Admin Panel</span>
             <ul class="nav flex-column">
-                <li class="nav-item"><a href="dashboard.php" class="nav-link text-white">Dashboard</a></li>
-                <li class="nav-item"><a href="products.php" class="nav-link text-white">จัดการสินค้า</a></li>
-                <li class="nav-item"><a href="categories.php" class="nav-link text-white active">จัดการหมวดหมู่</a></li>
-                <li class="nav-item"><a href="orders.php" class="nav-link text-white">จัดการออเดอร์</a></li>
-                <li class="nav-item"><a href="users.php" class="nav-link text-white">จัดการลูกค้า</a></li>
-                <li class="nav-item"><a href="../logout.php" class="nav-link text-danger mt-5">ออกจากระบบ</a></li>
+                <li class="nav-item"><a href="dashboard.php" class="nav-link"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
+                <li class="nav-item"><a href="products.php" class="nav-link"><i class="bi bi-box-seam"></i>จัดการสินค้า</a></li>
+                <li class="nav-item"><a href="categories.php" class="nav-link active"><i class="bi bi-tags"></i>จัดการหมวดหมู่</a></li>
+                <li class="nav-item"><a href="orders.php" class="nav-link"><i class="bi bi-receipt"></i>จัดการออเดอร์</a></li>
+                <li class="nav-item"><a href="users.php" class="nav-link"><i class="bi bi-people"></i>จัดการลูกค้า</a></li>
+                <li class="nav-item"><a href="../logout.php" class="nav-link logout-link"><i class="bi bi-box-arrow-left"></i>ออกจากระบบ</a></li>
             </ul>
         </div>
 
-        <div class="col-md-10 p-4">
-            <h2 class="mb-4">จัดการประเภทสินค้า</h2>
+        <!-- Main Content -->
+        <div class="col-md-10 admin-main">
+            <h2 class="admin-page-title"><i class="bi bi-tags"></i>จัดการประเภทสินค้า</h2>
 
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <?php echo $edit_data ? 'แก้ไขประเภทสินค้า' : 'เพิ่มประเภทสินค้าใหม่'; ?>
+            <div class="row g-4">
+                <!-- Add/Edit Form -->
+                <div class="col-md-4 admin-animate admin-animate-delay-1">
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h5>
+                                <i class="bi bi-<?php echo $edit_data ? 'pencil' : 'plus-circle'; ?> me-2" style="color:var(--admin-primary);"></i>
+                                <?php echo $edit_data ? 'แก้ไขประเภทสินค้า' : 'เพิ่มประเภทสินค้าใหม่'; ?>
+                            </h5>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body admin-form">
                             <form method="post">
                                 <input type="hidden" name="id" value="<?php echo $edit_data['id'] ?? ''; ?>">
                                 <div class="mb-3">
-                                    <label>ชื่อหมวดหมู่</label>
+                                    <label class="form-label">ชื่อหมวดหมู่</label>
                                     <input type="text" name="name" class="form-control" required 
                                            value="<?php echo $edit_data['name'] ?? ''; ?>" 
                                            placeholder="เช่น เสื้อผ้า, อุปกรณ์ไอที">
                                 </div>
-                                <button type="submit" class="btn btn-success w-100">
+                                <button type="submit" class="btn btn-admin-success w-100">
+                                    <i class="bi bi-<?php echo $edit_data ? 'check-lg' : 'plus-lg'; ?> me-1"></i>
                                     <?php echo $edit_data ? 'บันทึกการแก้ไข' : 'เพิ่มข้อมูล'; ?>
                                 </button>
                                 <?php if($edit_data): ?>
-                                    <a href="categories.php" class="btn btn-secondary w-100 mt-2">ยกเลิก</a>
+                                    <a href="categories.php" class="btn btn-admin-secondary w-100 mt-2">
+                                        <i class="bi bi-x-lg me-1"></i>ยกเลิก
+                                    </a>
                                 <?php endif; ?>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-8">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <table class="table table-striped table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width: 10%;">ID</th>
-                                        <th>ชื่อหมวดหมู่</th>
-                                        <th style="width: 30%;">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $stmt = $pdo->query("SELECT * FROM categories ORDER BY id ASC");
-                                    while ($row = $stmt->fetch()) {
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $row['id']; ?></td>
-                                        <td><?php echo htmlspecialchars($row['name']); ?></td>
-                                        <td>
-                                            <a href="categories.php?edit=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">แก้ไข</a>
-                                            <a href="categories.php?delete=<?php echo $row['id']; ?>" 
-                                               class="btn btn-danger btn-sm" 
-                                               onclick="return confirm('ยืนยันการลบ?')">ลบ</a>
-                                        </td>
-                                    </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
+                <!-- Categories Table -->
+                <div class="col-md-8 admin-animate admin-animate-delay-2">
+                    <div class="admin-card">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table admin-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 10%;">ID</th>
+                                            <th>ชื่อหมวดหมู่</th>
+                                            <th style="width: 30%;">จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $stmt = $pdo->query("SELECT * FROM categories ORDER BY id ASC");
+                                        while ($row = $stmt->fetch()) {
+                                        ?>
+                                        <tr>
+                                            <td class="fw-medium"><?php echo $row['id']; ?></td>
+                                            <td><?php echo htmlspecialchars($row['name']); ?></td>
+                                            <td>
+                                                <a href="categories.php?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-admin-warning"><i class="bi bi-pencil me-1"></i>แก้ไข</a>
+                                                <a href="categories.php?delete=<?php echo $row['id']; ?>" 
+                                                   class="btn btn-sm btn-admin-danger" 
+                                                   onclick="return confirm('ยืนยันการลบ?')"><i class="bi bi-trash me-1"></i>ลบ</a>
+                                            </td>
+                                        </tr>
+                                        <?php } ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
