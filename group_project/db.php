@@ -1,5 +1,5 @@
 <?php
-$host = '45.136.255.138';
+$host = 'localhost';
 $dbname = 'shop_project';
 $username = 'root'; // หรือ username ของคุณ
 $password = 'Golf@2004'; // หรือ password ของคุณ
