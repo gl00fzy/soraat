@@ -55,16 +55,16 @@ if (isset($_POST['Submit'])) {
 
 <?php
 
-$sql = "SELECT * FROM provinces";
+$sql = "SELECT * FROM provinces INNER JOIN regions ON provinces.r_id = regions.r_id";
 $rs = mysqli_query($conn, $sql);
 while ($data = mysqli_fetch_array($rs)) {
 ?>
     <tr>
     <td><?php echo $data['p_id'] ?></td>
     <td><?php echo $data['p_name'] ?></td>
-    <td><img src="img/<?php echo $data['p_id'] ?>.<?php echo $data['p_ext'] ?>" width="20" height="20"></td>
-    <td align="center"><a href="delete_region.php?id=<?php echo $data['p_id'] ?>" 
-    onclick="return confirm('คุณต้องการลบข้อมูลนี้หรือไม่')"><img src="img/delete.png" width="20" height="20"></td>
+    <td><img src="img/<?php echo $data['p_id'] ?>.<?php echo $data['p_ext'] ?>" width="150" ></td>
+    <td align="center"><a href="delete_province.php?id=<?php echo $data['p_id'] ?>&ext=<?php echo $data['p_ext'] ?>" 
+    onclick="return confirm('คุณต้องการลบข้อมูลนี้หรือไม่')"><img src="img/delete.png" width="25" height="25"></td>
     </tr>
 <?php
 }
