@@ -7,5 +7,21 @@
 
 <body>
 <h1> สวัสดี งาน i -- สรอัฐ น้ำใส (กอฟ) </h1>
+
+<?php
+include 'connectdb.php';
+
+$sql = "SELECT * FROM regions";
+$rs = mysqli_query($conn, $sql);
+
+
+while ($data = mysqli_fetch_array($rs)) {
+    echo $data['r_id']. "<br>";
+    echo $data['r_name']. "<br>";
+}
+
+mysqli_close($conn);
+?>
+
 </body>
 </html>
