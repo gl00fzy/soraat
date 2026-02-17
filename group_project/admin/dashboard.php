@@ -2,7 +2,8 @@
 require_once '../db.php';
 
 // ตรวจสอบสิทธิ์ Admin
-// if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
 
 // 1. ดึงข้อมูลสรุป (Stats)
 // นับจำนวนออเดอร์ทั้งหมด

@@ -1,6 +1,9 @@
 <?php
 require_once '../db.php';
 
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
+
 // --- ส่วนจัดการ Logic (PHP) ---
 
 // 1. จัดการการบันทึกข้อมูล (เพิ่ม หรือ แก้ไข)

@@ -2,7 +2,8 @@
 require_once '../db.php';
 
 // ตรวจสอบสิทธิ์ Admin (ถ้ามีระบบ Login)
-// if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
 
 // ดึงหมวดหมู่สินค้ามาเตรียมไว้สำหรับ Dropdown
 $cat_stmt = $pdo->query("SELECT * FROM categories");

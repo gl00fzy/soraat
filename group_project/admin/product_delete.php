@@ -1,6 +1,9 @@
 <?php
 require_once '../db.php';
 
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
+
 // ตรวจสอบว่าส่ง ID มาหรือไม่
 if (isset($_GET['id'])) {
     $id = $_GET['id'];

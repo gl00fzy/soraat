@@ -3,7 +3,7 @@ require_once 'db.php';
 
 if (isset($_POST['register'])) {
     $username = $_POST['username'];
-    $password = $_POST['password']; // ควรใช้ password_hash($password, PASSWORD_DEFAULT) ในงานจริง
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $fullname = $_POST['fullname'];
     $email = $_POST['email'];
     $address = $_POST['address'];

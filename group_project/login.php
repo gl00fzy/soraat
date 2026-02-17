@@ -24,9 +24,8 @@ if (isset($_POST['login'])) {
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 
-    // เช็ค Password (ในที่นี้สมมติว่ายังไม่ Hash เพื่อความง่ายในการทดสอบเบื้องต้น)
-    // การใช้งานจริงควรใช้: if ($user && password_verify($password, $user['password']))
-    if ($user && $password == $user['password']) { 
+    // เช็ค Password แบบ Hash
+    if ($user && password_verify($password, $user['password'])) { 
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['fullname'] = $user['fullname'];

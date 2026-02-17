@@ -1,6 +1,9 @@
 <?php
 require_once '../db.php';
 
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
+
 // ลบลูกค้า
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];

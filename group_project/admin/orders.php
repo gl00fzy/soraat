@@ -1,6 +1,9 @@
 <?php
 require_once '../db.php';
 
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
+
 // โค้ดอัปเดตสถานะ (เมื่อกดปุ่มบันทึกจาก Modal หรือ Form)
 if (isset($_POST['update_status'])) {
     $order_id = $_POST['order_id'];

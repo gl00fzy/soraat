@@ -1,5 +1,8 @@
 <?php
 require_once '../db.php';
+
+// ตรวจสอบสิทธิ์ Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }
 $order_id = $_GET['id'];
 
 // ดึงข้อมูลออเดอร์ + ข้อมูลลูกค้า (ที่อยู่)

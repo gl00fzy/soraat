@@ -57,7 +57,7 @@
                 <img src="<?php echo $row['image'] ? $row['image'] : 'https://via.placeholder.com/300x200'; ?>" class="card-img-top" alt="Product Image">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><?php echo htmlspecialchars($row['name']); ?></h5>
-                    <p class="card-text text-muted flex-grow-1"><?php echo htmlspecialchars(substr($row['description'], 0, 50)) . '...'; ?></p>
+                    <p class="card-text text-muted flex-grow-1"><?php echo htmlspecialchars(mb_substr($row['description'], 0, 50, 'UTF-8')) . '...'; ?></p>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="h5 mb-0 text-dark"><?php echo number_format($row['price'], 2); ?> ฿</span>
                         <a href="product_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
