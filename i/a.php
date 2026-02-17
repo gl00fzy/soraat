@@ -23,5 +23,20 @@ while ($data = mysqli_fetch_array($rs)) {
 mysqli_close($conn);
 ?>
 
+<table border="1">
+    <tr>
+        <th>Region ID</th>
+        <th>Region Name</th>
+    </tr>
+    <?php
+    while ($data = mysqli_fetch_array($rs)) {
+        echo "<tr>";
+        echo "<td>" . $data['r_id'] . "</td>";
+        echo "<td>" . $data['r_name'] . "</td>";
+        echo "</tr>";
+    }
+    ?>
+</table>
+
 </body>
 </html>
