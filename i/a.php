@@ -27,6 +27,7 @@ if (isset($_POST['Submit'])) {
     <tr>
         <th>Region ID</th>
         <th>Region Name</th>
+        <th>Delete</th>
     </tr>
 
 <?php
