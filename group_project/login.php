@@ -16,8 +16,10 @@ if (isset($_POST['login'])) {
         
         if ($user['role'] == 'admin') {
             header("Location: admin/dashboard.php");
+            exit();
         } else {
             header("Location: index.php");
+            exit();
         }
     } else {
         $login_error = true;

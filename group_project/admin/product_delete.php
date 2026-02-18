@@ -37,5 +37,6 @@ if (isset($_GET['id'])) {
 } else {
     // ถ้าไม่มี ID ส่งมา ให้กลับหน้าหลักเลย
     header("Location: products.php");
+    exit();
 }
 ?>

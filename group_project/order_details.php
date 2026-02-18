@@ -3,7 +3,9 @@ require_once 'db.php';
 
 if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit(); }
 
-$order_id = $_GET['id'];
+if (!isset($_GET['id'])) { header("Location: profile.php"); exit(); }
+
+$order_id = intval($_GET['id']);
 $user_id = $_SESSION['user_id'];
 
 // ดึงข้อมูลหัวบิล (ต้องเช็คด้วยว่าเป็นของ user คนนี้จริงๆ เพื่อความปลอดภัย)
@@ -91,7 +93,7 @@ if($status == 'cancelled') $badge_class = 'badge-cancelled';
                                         <?php if($item['image']): ?>
                                         <img src="<?php echo $item['image']; ?>" width="40" style="border-radius:6px; border:1px solid var(--glass-border);">
                                         <?php endif; ?>
-                                        <span class="fw-medium"><?php echo $item['name']; ?></span>
+                                        <span class="fw-medium"><?php echo htmlspecialchars($item['name']); ?></span>
                                     </div>
                                 </td>
                                 <td class="text-end"><?php echo number_format($item['price'], 2); ?> ฿</td>

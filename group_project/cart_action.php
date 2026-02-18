@@ -30,8 +30,14 @@ if ($act == 'remove' && $p_id > 0) {
 if ($act == 'update') {
     $amount_array = $_POST['amount'];
     foreach ($amount_array as $p_id => $amount) {
-        $_SESSION['cart'][$p_id] = $amount;
+        $amount = intval($amount);
+        if ($amount > 0) {
+            $_SESSION['cart'][$p_id] = $amount;
+        } else {
+            unset($_SESSION['cart'][$p_id]); // ถ้าจำนวน <= 0 ให้ลบออกจากตะกร้า
+        }
     }
     header("Location: cart.php");
+    exit();
 }
 ?>

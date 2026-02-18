@@ -24,8 +24,9 @@ try {
 
     // 1. คำนวณราคารวมอีกครั้ง (เพื่อความชัวร์ ห้ามเชื่อค่าจากหน้าเว็บ)
     $product_ids = array_keys($_SESSION['cart']);
-    $ids = implode(',', $product_ids);
-    $stmt = $pdo->query("SELECT * FROM products WHERE id IN ($ids)");
+    $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+    $stmt->execute($product_ids);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $total_price = 0;

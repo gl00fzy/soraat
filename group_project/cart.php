@@ -36,10 +36,10 @@ if (empty($product_ids)) {
     exit(); 
 }
 
-// แปลง array เป็น string เพื่อใช้ใน SQL เช่น (1, 2, 5)
-$ids = implode(',', $product_ids);
-$sql = "SELECT * FROM products WHERE id IN ($ids)";
-$stmt = $pdo->query($sql);
+// แปลง array เป็น prepared statement placeholders เพื่อป้องกัน SQL Injection
+$placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+$stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+$stmt->execute($product_ids);
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 

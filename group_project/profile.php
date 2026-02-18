@@ -81,19 +81,19 @@ $stmt_orders->execute([$user_id]);
                         <form action="" method="post">
                             <div class="mb-3">
                                 <label class="form-label-glass"><i class="bi bi-person me-1"></i>Username</label>
-                                <input type="text" value="<?php echo $user['username']; ?>" class="form-control form-control-glass" disabled>
+                                <input type="text" value="<?php echo htmlspecialchars($user['username']); ?>" class="form-control form-control-glass" disabled>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label-glass"><i class="bi bi-person-badge me-1"></i>ชื่อ-นามสกุล</label>
-                                <input type="text" name="fullname" value="<?php echo $user['fullname']; ?>" class="form-control form-control-glass" required>
+                                <input type="text" name="fullname" value="<?php echo htmlspecialchars($user['fullname']); ?>" class="form-control form-control-glass" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label-glass"><i class="bi bi-envelope me-1"></i>อีเมล</label>
-                                <input type="email" name="email" value="<?php echo $user['email']; ?>" class="form-control form-control-glass">
+                                <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" class="form-control form-control-glass">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label-glass"><i class="bi bi-geo-alt me-1"></i>ที่อยู่จัดส่ง</label>
-                                <textarea name="address" class="form-control form-control-glass" rows="3"><?php echo $user['address']; ?></textarea>
+                                <textarea name="address" class="form-control form-control-glass" rows="3"><?php echo htmlspecialchars($user['address']); ?></textarea>
                             </div>
                             <button type="submit" name="update_profile" class="btn btn-gradient w-100">
                                 <i class="bi bi-check-lg me-1"></i>บันทึกการแก้ไข
