@@ -45,6 +45,7 @@ if (isset($_POST['save'])) {
         $new_name = uniqid('prod_') . "." . $ext;
         $target_dir = "../uploads/";
         if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
+        chmod($target_dir, 0777); // ให้สิทธิ์เขียนโฟลเดอร์
         $upload_path = $target_dir . $new_name;
         if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
             $image_path = "uploads/" . $new_name;
