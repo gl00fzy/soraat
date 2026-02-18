@@ -102,9 +102,7 @@ $stmt->execute($params);
                                placeholder="ค้นหาสินค้า..." value="<?php echo htmlspecialchars($search); ?>"
                                style="border-left:none;">
                     </div>
-                    <?php if($cat_id > 0): ?>
-                        <input type="hidden" name="cat" value="<?php echo $cat_id; ?>">
-                    <?php endif; ?>
+
                     <button type="submit" class="btn btn-gradient px-4">
                         <i class="bi bi-search me-1"></i>ค้นหา
                     </button>
