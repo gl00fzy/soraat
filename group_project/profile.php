@@ -13,11 +13,12 @@ $user_id = $_SESSION['user_id'];
 if (isset($_POST['update_profile'])) {
     $fullname = $_POST['fullname'];
     $email = $_POST['email'];
+    $phone = $_POST['phone'];
     $address = $_POST['address'];
     
-    $sql = "UPDATE users SET fullname=?, email=?, address=? WHERE id=?";
+    $sql = "UPDATE users SET fullname=?, email=?, phone=?, address=? WHERE id=?";
     $stmt = $pdo->prepare($sql);
-    if ($stmt->execute([$fullname, $email, $address, $user_id])) {
+    if ($stmt->execute([$fullname, $email, $phone, $address, $user_id])) {
         echo "<script>alert('อัปเดตข้อมูลสำเร็จ');</script>";
         // อัปเดตข้อมูลใหม่เพื่อแสดงผลทันที
         $_SESSION['fullname'] = $fullname; 
@@ -90,6 +91,10 @@ $stmt_orders->execute([$user_id]);
                             <div class="mb-3">
                                 <label class="form-label-glass"><i class="bi bi-envelope me-1"></i>อีเมล</label>
                                 <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" class="form-control form-control-glass">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-glass"><i class="bi bi-telephone me-1"></i>เบอร์โทรศัพท์</label>
+                                <input type="text" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" class="form-control form-control-glass" pattern="[0-9\-\s\+]{9,15}" title="กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (อนุญาตให้ใส่ขีดหรือเว้นวรรคได้)">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label-glass"><i class="bi bi-geo-alt me-1"></i>ที่อยู่จัดส่ง</label>

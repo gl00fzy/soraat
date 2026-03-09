@@ -2,7 +2,7 @@
 $host = 'localhost';
 $dbname = 'shop_project';
 $username = 'root'; // หรือ username ของคุณ
-$password = 'Golf@2004'; // หรือ password ของคุณ
+$password = ''; // หรือ password ของคุณ
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
