@@ -7,7 +7,30 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Locatio
 // ลบลูกค้า
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
-    $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+    
+    // ตรวจสอบข้อมูลผู้ใช้ก่อนลบ
+    $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+    $stmt->execute([$id]);
+    $user = $stmt->fetch();
+    
+    // ป้องกันไม่ให้ลบ admin
+    if ($user && $user['role'] !== 'admin') {
+        // ดึงข้อมูล orders ของ user นี้เพื่อลบไฟล์สลิป (ถ้ามี)
+        $orderStmt = $pdo->prepare("SELECT payment_slip FROM orders WHERE user_id = ?");
+        $orderStmt->execute([$id]);
+        while ($order = $orderStmt->fetch()) {
+            if (!empty($order['payment_slip']) && file_exists("../" . $order['payment_slip'])) {
+                unlink("../" . $order['payment_slip']);
+            }
+        }
+        
+        // ลบ orders ทั้งหมดของลูกค้านี้ (order_items จะถูกลบตามอัตโนมัติด้วย ON DELETE CASCADE)
+        $pdo->prepare("DELETE FROM orders WHERE user_id = ?")->execute([$id]);
+        
+        // ลบข้อมูลลูกค้า
+        $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+    }
+
     header("Location: users.php");
     exit();
 }
