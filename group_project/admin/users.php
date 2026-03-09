@@ -8,31 +8,42 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Locatio
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
     
-    // ตรวจสอบข้อมูลผู้ใช้ก่อนลบ
-    $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
-    $stmt->execute([$id]);
-    $user = $stmt->fetch();
-    
-    // ป้องกันไม่ให้ลบ admin
-    if ($user && $user['role'] !== 'admin') {
-        // ดึงข้อมูล orders ของ user นี้เพื่อลบไฟล์สลิป (ถ้ามี)
-        $orderStmt = $pdo->prepare("SELECT payment_slip FROM orders WHERE user_id = ?");
-        $orderStmt->execute([$id]);
-        while ($order = $orderStmt->fetch()) {
-            if (!empty($order['payment_slip']) && file_exists("../" . $order['payment_slip'])) {
-                unlink("../" . $order['payment_slip']);
+    try {
+        // ตรวจสอบข้อมูลผู้ใช้ก่อนลบ
+        $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $user = $stmt->fetch();
+        
+        // ป้องกันไม่ให้ลบ admin
+        if ($user && $user['role'] !== 'admin') {
+            // ดึงข้อมูล orders ของ user นี้เพื่อลบไฟล์สลิป (ถ้ามี)
+            $orderStmt = $pdo->prepare("SELECT id, payment_slip FROM orders WHERE user_id = ?");
+            $orderStmt->execute([$id]);
+            while ($order = $orderStmt->fetch()) {
+                if (!empty($order['payment_slip']) && file_exists("../" . $order['payment_slip'])) {
+                    unlink("../" . $order['payment_slip']);
+                }
+                // ลบ order_items ที่ผูกกับ order นี้ (กรณีที่เซิร์ฟเวอร์ไม่ได้ตั้งค่า ON DELETE CASCADE)
+                $pdo->prepare("DELETE FROM order_items WHERE order_id = ?")->execute([$order['id']]);
             }
+            
+            // ลบ orders ทั้งหมดของลูกค้านี้
+            $pdo->prepare("DELETE FROM orders WHERE user_id = ?")->execute([$id]);
+            
+            // ลบข้อมูลลูกค้า
+            $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
         }
-        
-        // ลบ orders ทั้งหมดของลูกค้านี้ (order_items จะถูกลบตามอัตโนมัติด้วย ON DELETE CASCADE)
-        $pdo->prepare("DELETE FROM orders WHERE user_id = ?")->execute([$id]);
-        
-        // ลบข้อมูลลูกค้า
-        $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+    
+        header("Location: users.php");
+        exit();
+    } catch (PDOException $e) {
+        // หากมีข้อผิดพลาด แสดงรายละเอียดแทนที่จะเป็นหน้าขาว Error 500
+        die("<div style='padding:20px; font-family:sans-serif; text-align:center;'>
+                <h3 style='color:red;'>เกิดข้อผิดพลาดจากฐานข้อมูลไม่สามารถลบลูกค้าได้</h3>
+                <p>" . htmlspecialchars($e->getMessage()) . "</p>
+                <a href='users.php'>กลับไปหน้าจัดการลูกค้า</a>
+             </div>");
     }
-
-    header("Location: users.php");
-    exit();
 }
 ?>
 
