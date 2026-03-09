@@ -41,7 +41,24 @@ try {
     // 3. จัดการสลิปโอนเงิน
     $payment_slip_path = '';
     if (isset($_FILES['payment_slip']['name']) && $_FILES['payment_slip']['name'] != '') {
-        $ext = pathinfo($_FILES['payment_slip']['name'], PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($_FILES['payment_slip']['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+        
+        if (!in_array($ext, $allowed_exts)) {
+            echo "<script>alert('อัปโหลดเฉพาะไฟล์รูปภาพ (jpg, jpeg, png, gif) เท่านั้น'); window.location='checkout.php';</script>";
+            exit();
+        }
+        
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $_FILES['payment_slip']['tmp_name']);
+        finfo_close($finfo);
+        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
+        
+        if (!in_array($mime, $allowed_mimes)) {
+            echo "<script>alert('ประเภทไฟล์ไม่ถูกต้อง'); window.location='checkout.php';</script>";
+            exit();
+        }
+
         $new_name = "slip_" . uniqid() . "." . $ext;
         $target_dir = "uploads/";
         

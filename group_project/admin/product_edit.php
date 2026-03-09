@@ -37,18 +37,33 @@ if (isset($_POST['save'])) {
 
     // อัปโหลดรูปหลักใหม่ (ถ้ามี)
     if (!empty($_FILES['image']['name'])) {
-        // ลบรูปเก่า
-        if ($product['image'] && file_exists("../" . $product['image'])) {
-            unlink("../" . $product['image']);
-        }
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $new_name = uniqid('prod_') . "." . $ext;
-        $target_dir = "../uploads/";
-        if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
-        chmod($target_dir, 0777); // ให้สิทธิ์เขียนโฟลเดอร์
-        $upload_path = $target_dir . $new_name;
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
-            $image_path = "uploads/" . $new_name;
+        $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        if (in_array($ext, $allowed)) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $_FILES['image']['tmp_name']);
+            finfo_close($finfo);
+            $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (in_array($mime, $allowed_mimes)) {
+                // ลบรูปเก่า
+                if ($product['image'] && file_exists("../" . $product['image'])) {
+                    unlink("../" . $product['image']);
+                }
+                $new_name = uniqid('prod_') . "." . $ext;
+                $target_dir = "../uploads/";
+                if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
+                chmod($target_dir, 0777); // ให้สิทธิ์เขียนโฟลเดอร์
+                $upload_path = $target_dir . $new_name;
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
+                    $image_path = "uploads/" . $new_name;
+                }
+            } else {
+                echo "<script>alert('ประเภทไฟล์รูปภาพหลักไม่ถูกต้อง'); window.history.back();</script>";
+                exit();
+            }
+        } else {
+            echo "<script>alert('อัปโหลดได้เฉพาะไฟล์รูปภาพ (jpg, jpeg, png, gif)'); window.history.back();</script>";
+            exit();
         }
     }
 
@@ -63,13 +78,22 @@ if (isset($_POST['save'])) {
             $target_dir = "../uploads/";
             foreach ($_FILES['extra_images']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['extra_images']['error'][$key] == 0) {
-                    $ext = pathinfo($_FILES['extra_images']['name'][$key], PATHINFO_EXTENSION);
-                    $new_name = uniqid('extra_') . "." . $ext;
-                    $upload_path = $target_dir . $new_name;
-                    if (move_uploaded_file($tmp_name, $upload_path)) {
-                        $img_path = "uploads/" . $new_name;
-                        $stmt_img = $pdo->prepare("INSERT INTO product_images (product_id, image_path) VALUES (?, ?)");
-                        $stmt_img->execute([$id, $img_path]);
+                    $ext = strtolower(pathinfo($_FILES['extra_images']['name'][$key], PATHINFO_EXTENSION));
+                    $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+                    if (in_array($ext, $allowed)) {
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mime = finfo_file($finfo, $tmp_name);
+                        finfo_close($finfo);
+                        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
+                        if (in_array($mime, $allowed_mimes)) {
+                            $new_name = uniqid('extra_') . "." . $ext;
+                            $upload_path = $target_dir . $new_name;
+                            if (move_uploaded_file($tmp_name, $upload_path)) {
+                                $img_path = "uploads/" . $new_name;
+                                $stmt_img = $pdo->prepare("INSERT INTO product_images (product_id, image_path) VALUES (?, ?)");
+                                $stmt_img->execute([$id, $img_path]);
+                            }
+                        }
                     }
                 }
             }
