@@ -161,9 +161,9 @@ $stmt->execute($params);
                         <?php endif; ?>
                         <h5 class="card-title"><?php echo htmlspecialchars($row['name']); ?></h5>
                         <p class="card-text flex-grow-1"><?php echo htmlspecialchars(mb_substr($row['description'], 0, 50, 'UTF-8')) . '...'; ?></p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="price-tag"><?php echo number_format($row['price'], 2); ?> ฿</span>
-                            <a href="product_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-outline-glass btn-sm">
+                        <div class="d-flex justify-content-between align-items-center mt-3 gap-2" style="flex-wrap:nowrap;">
+                            <span class="price-tag" style="white-space:nowrap; font-size:clamp(0.8rem, 1.5vw, 1rem); flex-shrink:0;"><?php echo number_format($row['price'], 2); ?> ฿</span>
+                            <a href="product_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-outline-glass btn-sm" style="white-space:nowrap; flex-shrink:0;">
                                 <i class="bi bi-eye me-1"></i>ดูรายละเอียด
                             </a>
                         </div>
