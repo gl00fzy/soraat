@@ -1,5 +1,5 @@
 <?php
-require_once '../db.php';
+require_once '../includes/db.php';
 
 // ตรวจสอบสิทธิ์ Admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') { header("Location: ../login.php"); exit(); }

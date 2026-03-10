@@ -1,5 +1,5 @@
 <?php
-require_once 'db.php';
+require_once 'includes/db.php';
 
 // เช็คว่าล็อกอินหรือยัง
 if (!isset($_SESSION['user_id'])) {

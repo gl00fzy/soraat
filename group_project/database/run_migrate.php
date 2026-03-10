@@ -1,5 +1,5 @@
 <?php
-require_once 'db.php';
+require_once dirname(__DIR__) . '/includes/db.php';
 
 echo "<h2>Running Migration...</h2><pre>";
 

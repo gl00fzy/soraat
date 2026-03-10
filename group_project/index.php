@@ -1,4 +1,4 @@
-<?php require_once 'db.php'; ?>
+<?php require_once 'includes/db.php'; ?>
 <?php
 // --- ดึงหมวดหมู่ทั้งหมดสำหรับ filter ---
 $cat_stmt = $pdo->query("SELECT * FROM categories ORDER BY name");
@@ -36,7 +36,7 @@ $stmt->execute($params);
     <meta name="description" content="ร้านค้าออนไลน์คุณภาพ เลือกซื้อสินค้าหลากหลายในราคาสบายกระเป๋า">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
