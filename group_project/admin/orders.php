@@ -24,6 +24,7 @@ if (isset($_POST['update_status'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="admin_style.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
     <style>
         /* DataTable dark theme overrides */
         .dataTables_wrapper .dataTables_filter input,
