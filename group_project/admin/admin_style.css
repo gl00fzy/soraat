@@ -503,6 +503,13 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination .page-item.active .
     background: rgba(255, 255, 255, 0.06) !important;
 }
 
+/* Fix for white background on select options */
+.admin-body select option,
+.form-select option {
+    background: var(--admin-bg-secondary);
+    color: var(--admin-text);
+}
+
 .admin-form .form-label {
     color: var(--admin-text-secondary);
     font-weight: 500;
