@@ -91,19 +91,23 @@ $stmt->execute($params);
             <div class="accent-line"></div>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Search Bar with Live Suggest -->
         <div class="row justify-content-center mb-4">
             <div class="col-lg-8">
-                <form action="index.php#products" method="get" class="d-flex gap-2">
-                    <div class="input-group" style="border-radius:var(--radius-md); overflow:hidden;">
-                        <span class="input-group-text" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--primary); border-right:none;">
+                <form action="index.php#products" method="get" class="d-flex gap-2" id="search-form">
+                    <div class="input-group position-relative" style="border-radius:var(--radius-md); overflow:visible;">
+                        <span class="input-group-text" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--primary); border-right:none; border-radius:var(--radius-md) 0 0 var(--radius-md);">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" name="search" class="form-control form-control-glass" 
-                               placeholder="ค้นหาสินค้า..." value="<?php echo htmlspecialchars($search); ?>"
-                               style="border-left:none;">
+                        <input type="text" name="search" id="live-search-input"
+                               class="form-control form-control-glass"
+                               placeholder="ค้นหาสินค้า... (พิมพ์ 2 ตัวอักษรขึ้นไป)"
+                               value="<?php echo htmlspecialchars($search); ?>"
+                               autocomplete="off"
+                               style="border-left:none; border-radius:0;">
+                        <!-- Dropdown Suggestions -->
+                        <div id="search-dropdown" class="search-dropdown"></div>
                     </div>
-
                     <button type="submit" class="btn btn-gradient px-4">
                         <i class="bi bi-search me-1"></i>ค้นหา
                     </button>
@@ -193,19 +197,87 @@ $stmt->execute($params);
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+/* ---- Live Search Dropdown ---- */
+.search-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(22, 24, 50, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+}
+.search-dropdown.show { display: block; }
+.search-suggest-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+.search-suggest-item:last-child { border-bottom: none; }
+.search-suggest-item:hover, .search-suggest-item.active {
+    background: rgba(102,126,234,0.15);
+}
+.search-suggest-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+}
+.search-suggest-info { flex: 1; min-width: 0; }
+.search-suggest-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.search-suggest-cat {
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-top: 2px;
+}
+.search-suggest-price {
+    font-size: 0.88rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    flex-shrink: 0;
+}
+.search-suggest-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+</style>
 <script>
-// Scroll-triggered fade-in animation
+// ---- Scroll fade-in ----
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
+        if (entry.isIntersecting) entry.target.classList.add('visible');
     });
 }, { threshold: 0.1 });
-
 document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
 
-// Smooth scroll for anchor links
+// ---- Smooth scroll ----
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -213,6 +285,79 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 });
+
+// ---- Live Search Autocomplete ----
+const searchInput  = document.getElementById('live-search-input');
+const dropdown     = document.getElementById('search-dropdown');
+let debounceTimer  = null;
+let activeIndex    = -1;
+
+function formatPrice(price) {
+    return parseFloat(price).toLocaleString('th-TH', {minimumFractionDigits: 2}) + ' ฿';
+}
+
+function renderDropdown(items, query) {
+    activeIndex = -1;
+    if (!items.length) {
+        dropdown.innerHTML = `<div class="search-suggest-empty"><i class="bi bi-search me-1"></i>ไม่พบสินค้าที่ตรงกับ "${query}"</div>`;
+        dropdown.classList.add('show');
+        return;
+    }
+    const placeholder = 'https://via.placeholder.com/44x44/1a1a2e/667eea?text=?';
+    dropdown.innerHTML = items.map((item, i) => `
+        <a href="product_detail.php?id=${item.id}" class="search-suggest-item" data-index="${i}">
+            <img src="${item.image || placeholder}" class="search-suggest-thumb" alt="${item.name}" onerror="this.src='${placeholder}'">
+            <div class="search-suggest-info">
+                <div class="search-suggest-name">${item.name}</div>
+                ${item.category_name ? `<div class="search-suggest-cat"><i class="bi bi-tag me-1"></i>${item.category_name}</div>` : ''}
+            </div>
+            <span class="search-suggest-price">${formatPrice(item.price)}</span>
+        </a>
+    `).join('');
+    dropdown.classList.add('show');
+}
+
+function hideDropdown() {
+    dropdown.classList.remove('show');
+    activeIndex = -1;
+}
+
+searchInput.addEventListener('input', function () {
+    const q = this.value.trim();
+    clearTimeout(debounceTimer);
+    if (q.length < 2) { hideDropdown(); return; }
+    debounceTimer = setTimeout(() => {
+        fetch(`search_suggest.php?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => renderDropdown(data, q))
+            .catch(() => hideDropdown());
+    }, 300);
+});
+
+// Keyboard navigation
+searchInput.addEventListener('keydown', function (e) {
+    const items = dropdown.querySelectorAll('.search-suggest-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = Math.min(activeIndex + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = Math.max(activeIndex - 1, -1);
+    } else if (e.key === 'Escape') {
+        hideDropdown(); return;
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+        e.preventDefault();
+        items[activeIndex].click(); return;
+    }
+    items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+    if (activeIndex >= 0) items[activeIndex].scrollIntoView({ block: 'nearest' });
+});
+
+// Close when clicking outside
+document.addEventListener('click', function (e) {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) hideDropdown();
+});
 </script>
 </body>
-</html>
+</html>
