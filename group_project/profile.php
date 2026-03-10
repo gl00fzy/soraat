@@ -61,7 +61,7 @@ $stmt_orders->execute([$user_id]);
         <a class="navbar-brand" href="index.php">✦ MY SHOP</a>
         <div class="ms-auto d-flex gap-2">
             <a href="index.php" class="btn btn-outline-glass btn-sm"><i class="bi bi-house-door me-1"></i>กลับหน้าหลัก</a>
-            <a href="logout.php" class="btn btn-danger-glass btn-sm"><i class="bi bi-box-arrow-right me-1"></i>ออกจากระบบ</a>
+            <a href="logout.php" class="btn btn-danger-glass btn-sm d-flex align-items-center justify-content-center"><i class="bi bi-box-arrow-right me-1"></i>ออกจากระบบ</a>
         </div>
     </div>
 </nav>
