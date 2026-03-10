@@ -242,15 +242,30 @@ body.admin-body {
 }
 
 /* ---------- Admin Tables ---------- */
-.admin-table {
-    color: var(--admin-text);
+.admin-table,
+.table.admin-table,
+table.dataTable.admin-table {
     margin-bottom: 0;
+    background-color: transparent !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-hover-bg: rgba(102, 126, 234, 0.05) !important;
+    --bs-table-active-bg: transparent !important;
+    color: var(--admin-text) !important;
+    border-color: var(--admin-card-border) !important;
+}
+
+.admin-table> :not(caption)>*>* {
+    background-color: transparent !important;
+    color: var(--admin-text) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
 }
 
 .admin-table thead th {
-    background: rgba(102, 126, 234, 0.08);
+    background-color: rgba(102, 126, 234, 0.08) !important;
     border-bottom: 1px solid var(--admin-card-border) !important;
-    color: var(--admin-text-secondary);
+    color: var(--admin-text-secondary) !important;
     font-weight: 600;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -260,18 +275,37 @@ body.admin-body {
 }
 
 .admin-table tbody td {
+    background-color: transparent !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
     padding: 14px 16px;
     vertical-align: middle;
     font-size: 0.9rem;
+    color: var(--admin-text) !important;
 }
 
 .admin-table tbody tr {
+    background-color: transparent !important;
     transition: var(--admin-transition);
 }
 
-.admin-table tbody tr:hover {
-    background: rgba(102, 126, 234, 0.05);
+/* Force DataTables odd/even and generic rows to be transparent */
+table.dataTable.table-striped>tbody>tr.odd>*,
+table.dataTable.table-striped>tbody>tr.even>*,
+table.dataTable tbody tr.odd>*,
+table.dataTable tbody tr.even>*,
+table.dataTable tbody tr>* {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--admin-text) !important;
+}
+
+/* Hover effects */
+.admin-table tbody tr:hover,
+table.dataTable.table-hover>tbody>tr:hover>*,
+.admin-table tbody tr:hover>*,
+table.dataTable tbody tr:hover>* {
+    background-color: rgba(102, 126, 234, 0.05) !important;
+    color: var(--admin-text) !important;
 }
 
 .admin-table tfoot td {
@@ -326,7 +360,7 @@ body.admin-body {
 
 .btn-admin-success {
     background: linear-gradient(135deg, var(--admin-success), #38a169);
-    color: #fff;
+    color: #fff !important;
     border: none;
     padding: 8px 20px;
     border-radius: 8px;
@@ -337,7 +371,7 @@ body.admin-body {
 .btn-admin-success:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(72, 187, 120, 0.35);
-    color: #fff;
+    color: #fff !important;
 }
 
 .btn-admin-warning {

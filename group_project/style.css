@@ -414,14 +414,27 @@ body {
 }
 
 /* ---------- Tables ---------- */
-.table-glass {
-    color: var(--text-primary);
+.table-glass,
+table.table-glass {
+    color: var(--text-primary) !important;
+    background-color: transparent !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-hover-bg: rgba(102, 126, 234, 0.05) !important;
+    --bs-table-active-bg: transparent !important;
+}
+
+.table-glass > :not(caption) > * > * {
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
 
 .table-glass thead th {
-    background: rgba(102, 126, 234, 0.12);
-    border-bottom: 1px solid var(--glass-border);
-    color: var(--text-secondary);
+    background-color: rgba(102, 126, 234, 0.12) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    color: var(--text-secondary) !important;
     font-weight: 600;
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -430,21 +443,35 @@ body {
 }
 
 .table-glass tbody td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
     padding: 14px 16px;
     vertical-align: middle;
+    color: var(--text-primary) !important;
 }
 
 .table-glass tbody tr {
     transition: var(--transition-fast);
+    background-color: transparent !important;
 }
 
-.table-glass tbody tr:hover {
-    background: rgba(102, 126, 234, 0.06);
+table.dataTable.table-glass > tbody > tr.odd > *,
+table.dataTable.table-glass > tbody > tr.even > *,
+table.table-glass tbody tr > * {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-primary) !important;
+}
+
+.table-glass tbody tr:hover,
+.table-glass tbody tr:hover > * {
+    background-color: rgba(102, 126, 234, 0.06) !important;
+    color: var(--text-primary) !important;
 }
 
 .table-glass tfoot td {
-    border-top: 2px solid var(--glass-border);
+    background-color: transparent !important;
+    border-top: 2px solid var(--glass-border) !important;
     padding: 16px;
 }
 
@@ -692,10 +719,11 @@ body {
     padding: 80px 20px;
 }
 
-.empty-state i {
+.empty-state > i {
     font-size: 4rem;
     color: var(--text-muted);
     margin-bottom: 20px;
+    display: inline-block;
 }
 
 .empty-state h3 {

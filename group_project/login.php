@@ -79,6 +79,10 @@ if (isset($_POST['login'])) {
 
         <hr class="auth-divider">
 
+        <p class="text-center mb-2" style="color:var(--text-muted);">
+            ลืมรหัสผ่าน? <a href="forgot_password.php" class="auth-link">รีเซ็ตรหัสผ่าน</a>
+        </p>
+
         <p class="text-center mb-0" style="color:var(--text-muted);">
             ยังไม่มีบัญชี? <a href="register.php" class="auth-link">สมัครสมาชิกใหม่</a>
         </p>
