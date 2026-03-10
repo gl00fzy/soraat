@@ -239,6 +239,9 @@ body {
     border-radius: var(--radius-md);
     overflow: hidden;
     transition: var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .product-card:hover {
@@ -274,6 +277,13 @@ body {
 
 .product-card .card-body {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.product-card .card-body .card-text {
+    flex-grow: 1;
 }
 
 .product-card .card-title {
