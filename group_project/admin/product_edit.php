@@ -40,10 +40,19 @@ if (isset($_POST['save'])) {
         $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         if (in_array($ext, $allowed)) {
+            $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mime = finfo_file($finfo, $_FILES['image']['tmp_name']);
             finfo_close($finfo);
-            $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
+            
+            // Fallback for some PNGs that might report weird mimes
+            if (!in_array($mime, $allowed_mimes)) {
+                $image_info = getimagesize($_FILES['image']['tmp_name']);
+                if ($image_info !== false) {
+                    $mime = $image_info['mime'];
+                }
+            }
+
             if (in_array($mime, $allowed_mimes)) {
                 // ลบรูปเก่า
                 if ($product['image'] && file_exists("../" . $product['image'])) {
@@ -81,10 +90,19 @@ if (isset($_POST['save'])) {
                     $ext = strtolower(pathinfo($_FILES['extra_images']['name'][$key], PATHINFO_EXTENSION));
                     $allowed = ['jpg', 'jpeg', 'png', 'gif'];
                     if (in_array($ext, $allowed)) {
+                        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                         $finfo = finfo_open(FILEINFO_MIME_TYPE);
                         $mime = finfo_file($finfo, $tmp_name);
                         finfo_close($finfo);
-                        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
+                        
+                        // Fallback checking
+                        if (!in_array($mime, $allowed_mimes)) {
+                            $image_info = getimagesize($tmp_name);
+                            if ($image_info !== false) {
+                                $mime = $image_info['mime'];
+                            }
+                        }
+
                         if (in_array($mime, $allowed_mimes)) {
                             $new_name = uniqid('extra_') . "." . $ext;
                             $upload_path = $target_dir . $new_name;
